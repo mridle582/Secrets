@@ -1,2 +1,2 @@
 # Secrets
-A exercise in user authentication
+An exercise in user authentication
