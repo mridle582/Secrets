@@ -15,12 +15,12 @@ app.use(bodyParser.urlencoded({
 
 mongoose.connect("mongodb://0.0.0.0:27017/userDB");
 
-const usersSchema = {
+const userSchema = {
     email: String,
     password: String
 };
 
-const User = new mongoose.model("User", usersSchema);
+const User = new mongoose.model("User", userSchema);
 
 
 app.get("/", (req, res) => {
@@ -37,7 +37,17 @@ app.get("/register", (req, res) => {
     res.render("register");
 });
 
+app.post("/register", (req, res) => {
+    const newUser = new User({
+        email: req.body.username,
+        password: req.body.password
+    });
+    newUser.save((err) => {
+        err ? console.log(err) : res.render("secrets");
+    });
+});
 
-app.listen(3000, ()=> {
+
+app.listen(3000, () => {
     console.log("Server started on port 3000.");
 });
