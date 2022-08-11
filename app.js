@@ -1,7 +1,10 @@
+require("dotenv").config();
+
 const express = require("express");
 const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const encrypt = require("mongoose-encryption");
 
 const app = express();
 
@@ -15,10 +18,14 @@ app.use(bodyParser.urlencoded({
 
 mongoose.connect("mongodb://0.0.0.0:27017/userDB");
 
-const userSchema = {
+const userSchema = new mongoose.Schema ({
     email: String,
     password: String
-};
+});
+
+const secret = 
+
+userSchema.plugin(encrypt, { secret: process.env.ENCRYPT_SECRET, encryptedFields: ["password"] });
 
 const User = new mongoose.model("User", userSchema);
 
@@ -36,6 +43,27 @@ app.get("/login", (req, res) => {
 app.get("/register", (req, res) => {
     res.render("register");
 });
+
+
+app.post("/login", (req, res) => {
+    const userName = req.body.username;
+    const userPass = req.body.password;
+
+    User.findOne({ email: userName }, (err, foundUser) => {
+        if (err) {
+            console.log(err);
+        } else {
+            if (foundUser) {
+                if (foundUser.password === userPass) {
+                    res.render("secrets");
+                } else {
+                    console.log("Wrong Password.");
+                }
+            }
+        }
+    });
+});
+
 
 app.post("/register", (req, res) => {
     const newUser = new User({
