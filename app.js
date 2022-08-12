@@ -2,7 +2,7 @@ const express = require("express");
 const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const md5 = require("md5");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
@@ -14,14 +14,14 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+const saltRounds = 10;
+
 mongoose.connect("mongodb://0.0.0.0:27017/userDB");
 
 const userSchema = new mongoose.Schema ({
     email: String,
     password: String
 });
-
-// userSchema.plugin(encrypt, { secret: process.env.ENCRYPT_SECRET, encryptedFields: ["password"] });
 
 const User = new mongoose.model("User", userSchema);
 
@@ -43,18 +43,19 @@ app.get("/register", (req, res) => {
 
 app.post("/login", (req, res) => {
     const userName = req.body.username;
-    const userPass = md5(req.body.password);
+    const userPass = req.body.password;
 
     User.findOne({ email: userName }, (err, foundUser) => {
         if (err) {
             console.log(err);
         } else {
             if (foundUser) {
-                if (foundUser.password === userPass) {
-                    res.render("secrets");
-                } else {
-                    console.log("Wrong Password.");
-                }
+                bcrypt.compare(userPass, foundUser.password, (err, result) => {
+                    const errMsg = `Password ${userPass} incorrect for ${userName}, err: ${err}`;
+                    result ? res.render("secrets") : console.log(errMsg);
+                });
+            } else {
+                console.log(`Username ${userName} not found`);
             }
         }
     });
@@ -62,12 +63,18 @@ app.post("/login", (req, res) => {
 
 
 app.post("/register", (req, res) => {
-    const newUser = new User({
-        email: req.body.username,
-        password: md5(req.body.password)
-    });
-    newUser.save((err) => {
-        err ? console.log(err) : res.render("secrets");
+    bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+        if (err) {
+            console.log(err);
+        } else {
+            const newUser = new User({
+                email: req.body.username,
+                password: hash
+            });
+            newUser.save((err) => {
+                err ? console.log(err) : res.render("secrets");
+            });
+        }
     });
 });
 
