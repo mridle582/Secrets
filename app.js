@@ -18,7 +18,7 @@ const saltRounds = 10;
 
 mongoose.connect("mongodb://0.0.0.0:27017/userDB");
 
-const userSchema = new mongoose.Schema ({
+const userSchema = new mongoose.Schema({
     email: String,
     password: String
 });
@@ -45,14 +45,19 @@ app.post("/login", (req, res) => {
     const userName = req.body.username;
     const userPass = req.body.password;
 
-    User.findOne({ email: userName }, (err, foundUser) => {
+    User.findOne({
+        email: userName
+    }, (err, foundUser) => {
         if (err) {
             console.log(err);
         } else {
             if (foundUser) {
                 bcrypt.compare(userPass, foundUser.password, (err, result) => {
-                    const errMsg = `Password ${userPass} incorrect for ${userName}, err: ${err}`;
-                    result ? res.render("secrets") : console.log(errMsg);
+                    if (result === true) {
+                        res.render("secrets");
+                    } else {
+                        console.log(`Err: ${err}, Res: ${result}`);
+                    }
                 });
             } else {
                 console.log(`Username ${userName} not found`);
