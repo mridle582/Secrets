@@ -23,7 +23,8 @@ app.use(session({
     saveUninitialized: false
 }));
 
-const saltRounds = 10;
+app.use(passport.initialize());
+app.use(passport.session());
 
 mongoose.connect("mongodb://0.0.0.0:27017/userDB");
 
@@ -32,8 +33,14 @@ const userSchema = new mongoose.Schema({
     password: String
 });
 
+userSchema.plugin(passportLocalMongoose);
+
 const User = new mongoose.model("User", userSchema);
 
+passport.use(User.createStrategy());
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 app.get("/", (req, res) => {
     res.render("home");
@@ -49,12 +56,48 @@ app.get("/register", (req, res) => {
     res.render("register");
 });
 
+app.get("/secrets", (req, res) => {
+    req.isAuthenticated() ? res.render("secrets") : res.redirect("/login");
+});
+
+app.get("/logout", (req, res) => {
+    req.logout((err) => {
+        err ? console.log(err) : res.redirect("/");
+    });
+});
 
 app.post("/login", (req, res) => {
+    const user = new User({
+        username: req.body.username,
+        password: req.body.password
+    });
+
+    req.login(user, (err) => {
+        if (err) {
+            console.log(err);
+            res.redirect("/login");
+        } else {
+            passport.authenticate("local")(req, res, () => {
+                res.redirect("/secrets");
+            });
+        }
+    });
 });
 
 
 app.post("/register", (req, res) => {
+    User.register({
+        username: req.body.username
+    }, req.body.password, (err, user) => {
+        if (err) {
+            console.log(err);
+            res.redirect("/register");
+        } else {
+            passport.authenticate("local")(req, res, () => {
+                res.redirect("/secrets");
+            });
+        }
+    });
 });
 
 
