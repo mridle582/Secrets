@@ -1,8 +1,11 @@
+require('dotenv').config();
 const express = require("express");
 const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const session = require("express-session");
+const passport = require("passport");
+const passportLocalMongoose = require("passport-local-mongoose");
 
 const app = express();
 
@@ -12,6 +15,12 @@ app.use(express.static("public"));
 
 app.use(bodyParser.urlencoded({
     extended: true
+}));
+
+app.use(session({
+    secret: process.env.PASSPORT_SECRET,
+    resave: false,
+    saveUninitialized: false
 }));
 
 const saltRounds = 10;
@@ -42,45 +51,10 @@ app.get("/register", (req, res) => {
 
 
 app.post("/login", (req, res) => {
-    const userName = req.body.username;
-    const userPass = req.body.password;
-
-    User.findOne({
-        email: userName
-    }, (err, foundUser) => {
-        if (err) {
-            console.log(err);
-        } else {
-            if (foundUser) {
-                bcrypt.compare(userPass, foundUser.password, (err, result) => {
-                    if (result === true) {
-                        res.render("secrets");
-                    } else {
-                        console.log(`Err: ${err}, Res: ${result}`);
-                    }
-                });
-            } else {
-                console.log(`Username ${userName} not found`);
-            }
-        }
-    });
 });
 
 
 app.post("/register", (req, res) => {
-    bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
-        if (err) {
-            console.log(err);
-        } else {
-            const newUser = new User({
-                email: req.body.username,
-                password: hash
-            });
-            newUser.save((err) => {
-                err ? console.log(err) : res.render("secrets");
-            });
-        }
-    });
 });
 
 
