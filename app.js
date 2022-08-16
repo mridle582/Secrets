@@ -56,15 +56,18 @@ app.get("/register", (req, res) => {
     res.render("register");
 });
 
+
 app.get("/secrets", (req, res) => {
     req.isAuthenticated() ? res.render("secrets") : res.redirect("/login");
 });
+
 
 app.get("/logout", (req, res) => {
     req.logout((err) => {
         err ? console.log(err) : res.redirect("/");
     });
 });
+
 
 app.post("/login", (req, res) => {
     const user = new User({
