@@ -33,7 +33,7 @@ app.use(passport.session());
 mongoose.connect('mongodb://0.0.0.0:27017/userDB');
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, unique: true },
+  username: {type: String, unique: true},
   provider: String,
   email: String,
   password: String,
@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.plugin(passportLocalMongoose, {
-  usernameField: "username"
+  usernameField: 'username',
 });
 userSchema.plugin(findOrCreate);
 
@@ -50,9 +50,9 @@ const User = new mongoose.model('User', userSchema);
 
 passport.use(User.createStrategy());
 
+
 passport.serializeUser((user, cb) => {
   process.nextTick(() => {
-    // console.log(user);
     cb(null, {
       id: user.id,
       username: user.username,
@@ -60,11 +60,13 @@ passport.serializeUser((user, cb) => {
   });
 });
 
+
 passport.deserializeUser((user, cb) => {
   process.nextTick(() => {
     return cb(null, user);
   });
 });
+
 
 passport.use(new GoogleStrategy({
   clientID: process.env.CLIENT_ID,
@@ -83,6 +85,7 @@ passport.use(new GoogleStrategy({
 },
 ));
 
+
 passport.use(new FacebookStrategy({
   clientID: process.env.FB_CLIENT_ID,
   clientSecret: process.env.FB_CLIENT_SECRET,
@@ -90,11 +93,10 @@ passport.use(new FacebookStrategy({
   profileFields: ['email'],
 },
 (accessToken, refreshToken, profile, cb) => {
-  // console.log(profile);
   User.findOrCreate({
     username: profile.id,
   }, {
-    provider: "facebook",
+    provider: 'facebook',
     email: profile._json.email,
   }, (err, user) => {
     return cb(err, user);
@@ -127,7 +129,7 @@ app.get('/auth/google/secrets',
 
 
 app.get('/auth/facebook', passport.authenticate('facebook', {
-  scope: ['public_profile', 'email']
+  scope: ['public_profile', 'email'],
 }));
 
 
