@@ -122,10 +122,9 @@ app.get("/auth/facebook", passport.authenticate("facebook"));
 
 app.get("/auth/facebook/secrets",
     passport.authenticate("facebook", {
-            successRedirect: "/secrets",
-            failureRedirect: "/login"
-        }
-    )
+        successRedirect: "/secrets",
+        failureRedirect: "/login"
+    })
 );
 
 
@@ -135,16 +134,22 @@ app.get("/register", (req, res) => {
 
 
 app.get("/secrets", (req, res) => {
-    User.find({ "secret": { $ne:null } }, (err, secrets) => {
-       if (err) {
-           console.log(err);
-       } else {
-           if (secrets) {
-               res.render("secrets", { usersWithSecrets: secrets });
-           } else {
-               console.log("No secrets");
-           }
-       }
+    User.find({
+        "secret": {
+            $ne: null
+        }
+    }, (err, secrets) => {
+        if (err) {
+            console.log(err);
+        } else {
+            if (secrets) {
+                res.render("secrets", {
+                    usersWithSecrets: secrets
+                });
+            } else {
+                console.log("No secrets");
+            }
+        }
     });
 });
 
@@ -198,7 +203,9 @@ app.post("/register", (req, res) => {
 
 app.post("/submit", (req, res) => {
     const submittedSecret = req.body.secret;
-    User.findOne({_id: req.user.id}, (err, foundUser) => {
+    User.findOne({
+        _id: req.user.id
+    }, (err, foundUser) => {
         if (!err) {
             if (foundUser) {
                 foundUser.secret = submittedSecret;
