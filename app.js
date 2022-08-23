@@ -50,7 +50,6 @@ const User = new mongoose.model('User', userSchema);
 
 passport.use(User.createStrategy());
 
-
 passport.serializeUser((user, cb) => {
   process.nextTick(() => {
     cb(null, {
@@ -60,13 +59,11 @@ passport.serializeUser((user, cb) => {
   });
 });
 
-
 passport.deserializeUser((user, cb) => {
   process.nextTick(() => {
     return cb(null, user);
   });
 });
-
 
 passport.use(new GoogleStrategy({
   clientID: process.env.CLIENT_ID,
@@ -84,7 +81,6 @@ passport.use(new GoogleStrategy({
   });
 },
 ));
-
 
 passport.use(new FacebookStrategy({
   clientID: process.env.FB_CLIENT_ID,
