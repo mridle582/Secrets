@@ -71,7 +71,6 @@ passport.use(new GoogleStrategy({
   callbackURL: 'http://localhost:3000/auth/google/secrets',
 },
 (accessToken, refreshToken, profile, cb) => {
-  // console.log(profile.id);
   User.findOrCreate({
     googleId: profile.id,
   }, (err, user) => {
@@ -86,7 +85,6 @@ passport.use(new FacebookStrategy({
   callbackURL: 'http://localhost:3000/auth/facebook/secrets',
 },
 (accessToken, refreshToken, profile, cb) => {
-  // console.log(profile.id);
   User.findOrCreate({
     facebookId: profile.id,
   }, (err, user) => {
