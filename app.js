@@ -33,14 +33,16 @@ app.use(passport.session());
 mongoose.connect('mongodb://0.0.0.0:27017/userDB');
 
 const userSchema = new mongoose.Schema({
+  username: { type: String, unique: true },
+  provider: String,
   email: String,
   password: String,
-  googleId: String,
-  facebookId: String,
   secret: String,
 });
 
-userSchema.plugin(passportLocalMongoose);
+userSchema.plugin(passportLocalMongoose, {
+  usernameField: "username"
+});
 userSchema.plugin(findOrCreate);
 
 // eslint-disable-next-line new-cap
@@ -50,10 +52,10 @@ passport.use(User.createStrategy());
 
 passport.serializeUser((user, cb) => {
   process.nextTick(() => {
+    // console.log(user);
     cb(null, {
       id: user.id,
       username: user.username,
-      name: user.name,
     });
   });
 });
@@ -64,7 +66,6 @@ passport.deserializeUser((user, cb) => {
   });
 });
 
-
 passport.use(new GoogleStrategy({
   clientID: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
@@ -72,7 +73,10 @@ passport.use(new GoogleStrategy({
 },
 (accessToken, refreshToken, profile, cb) => {
   User.findOrCreate({
-    googleId: profile.id,
+    username: profile.id,
+  }, {
+    provider: 'google',
+    email: profile._json.email,
   }, (err, user) => {
     return cb(err, user);
   });
@@ -83,10 +87,15 @@ passport.use(new FacebookStrategy({
   clientID: process.env.FB_CLIENT_ID,
   clientSecret: process.env.FB_CLIENT_SECRET,
   callbackURL: 'http://localhost:3000/auth/facebook/secrets',
+  profileFields: ['email'],
 },
 (accessToken, refreshToken, profile, cb) => {
+  // console.log(profile);
   User.findOrCreate({
-    facebookId: profile.id,
+    username: profile.id,
+  }, {
+    provider: "facebook",
+    email: profile._json.email,
   }, (err, user) => {
     return cb(err, user);
   });
@@ -105,7 +114,7 @@ app.get('/login', (req, res) => {
 
 
 app.get('/auth/google', passport.authenticate('google', {
-  scope: ['profile'],
+  scope: ['profile', 'email'],
 }));
 
 
@@ -117,7 +126,9 @@ app.get('/auth/google/secrets',
 );
 
 
-app.get('/auth/facebook', passport.authenticate('facebook'));
+app.get('/auth/facebook', passport.authenticate('facebook', {
+  scope: ['public_profile', 'email']
+}));
 
 
 app.get('/auth/facebook/secrets',
