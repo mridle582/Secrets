@@ -197,6 +197,7 @@ app.post('/login', (req, res) => {
 app.post('/register', (req, res) => {
   User.register({
     username: req.body.username,
+    provider: 'local',
   }, req.body.password, (err, user) => {
     if (err) {
       console.log(err);
