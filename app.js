@@ -72,7 +72,8 @@ passport.deserializeUser((user, cb) => {
 passport.use(new GoogleStrategy({
   clientID: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
-  callbackURL: 'http://localhost:3000/auth/google/secrets',
+  // callbackURL: 'http://localhost:3000/auth/google/secrets',
+  callbackURL: process.env.GOOGLE_CALLBACK,
 },
 (accessToken, refreshToken, profile, cb) => {
   User.findOrCreate({
@@ -89,7 +90,8 @@ passport.use(new GoogleStrategy({
 passport.use(new FacebookStrategy({
   clientID: process.env.FB_CLIENT_ID,
   clientSecret: process.env.FB_CLIENT_SECRET,
-  callbackURL: 'http://localhost:3000/auth/facebook/secrets',
+  // callbackURL: 'http://localhost:3000/auth/facebook/secrets',
+  callbackURL: process.env.FB_CALLBACK,
   profileFields: ['email'],
 },
 (accessToken, refreshToken, profile, cb) => {
