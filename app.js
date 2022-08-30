@@ -1,4 +1,7 @@
 require('dotenv').config();
+
+const port = process.env.PORT;
+
 const express = require('express');
 // eslint-disable-next-line no-unused-vars
 const ejs = require('ejs');
@@ -30,7 +33,8 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect('mongodb://0.0.0.0:27017/userDB');
+// mongoose.connect('mongodb://0.0.0.0:27017/userDB');
+mongoose.connect(`${process.env.MONGODB_URL}/userDB`);
 
 const userSchema = new mongoose.Schema({
   username: {type: String, unique: true},
@@ -232,6 +236,6 @@ app.post('/submit', (req, res) => {
 });
 
 
-app.listen(3000, () => {
-  console.log('Server started on port 3000.');
+app.listen(port || 3000, () => {
+  typeof port !== "undefined" ? console.log(`Server is running on port ${port}`) : console.log(`Server is running on port 3000`);
 });
